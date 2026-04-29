@@ -8,23 +8,28 @@ import snowflake.connector
 import streamlit as st
 from dotenv import load_dotenv
 
-# Load Snowflake credentials from .env
+# Load credentials from .env locally; Streamlit Cloud uses st.secrets instead
 load_dotenv()
+
+
+def _secret(key: str) -> str:
+    # Prefer st.secrets (Streamlit Cloud) over environment variables (local .env)
+    return st.secrets.get(key) or os.environ[key]
 
 
 # --- Database connection ---
 
 @st.cache_resource
 def get_connection():
-    # Reuse a single connection across reruns; credentials come from .env
+    # Reuse a single connection across reruns
     return snowflake.connector.connect(
-        account=os.environ["SNOWFLAKE_ACCOUNT"],
-        user=os.environ["SNOWFLAKE_USER"],
-        password=os.environ["SNOWFLAKE_PASSWORD"],
-        role=os.environ["SNOWFLAKE_ROLE"],
-        warehouse=os.environ["SNOWFLAKE_WAREHOUSE"],
-        database=os.environ["SNOWFLAKE_DATABASE"],
-        schema=os.environ["SNOWFLAKE_SCHEMA"],
+        account=_secret("SNOWFLAKE_ACCOUNT"),
+        user=_secret("SNOWFLAKE_USER"),
+        password=_secret("SNOWFLAKE_PASSWORD"),
+        role=_secret("SNOWFLAKE_ROLE"),
+        warehouse=_secret("SNOWFLAKE_WAREHOUSE"),
+        database=_secret("SNOWFLAKE_DATABASE"),
+        schema=_secret("SNOWFLAKE_SCHEMA"),
     )
 
 
